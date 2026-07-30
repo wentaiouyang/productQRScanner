@@ -14,6 +14,18 @@ import { writeFileSync } from "node:fs";
 const ORIGIN = "http://localhost:3000";
 const OUT = new URL("./cards-preview.html", import.meta.url).pathname;
 
+/**
+ * Which cards appear on the review page.
+ *
+ * The demo dataset is four finishes of one tap plus one other product, so showing every
+ * card repeats the same name and reads as a layout fault rather than as fixture data. One
+ * card shows the design; add SKUs here to show more.
+ */
+const PREVIEW_SKUS = ["16243"];
+
+/** Set false to also show the multi-product shelf format. */
+const INCLUDE_SHELF_CARDS = false;
+
 async function text(url) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`${res.status} ${url}`);
@@ -61,7 +73,7 @@ function extractFontVars(css) {
   return vars;
 }
 
-function extractCards(html) {
+function extractCards(html, skus) {
   const cards = html.match(/<article class="card[\s\S]*?<\/article>/g) ?? [];
   if (cards.length === 0) throw new Error("no cards found in the rendered page");
 
@@ -70,17 +82,29 @@ function extractCards(html) {
     if (/src="(?!data:)/.test(card)) throw new Error("card contains a non-data-URI src");
   }
 
-  return cards;
+  if (!skus) return cards;
+
+  // The SKU opens the card's spec line, either alone or followed by " · WELS …".
+  const wanted = cards.filter((card) =>
+    skus.some((sku) => new RegExp(`>\\s*${sku}(\\s*<|\\s+·)`).test(card)),
+  );
+  if (wanted.length === 0) {
+    throw new Error(`none of ${skus.join(", ")} matched a rendered card`);
+  }
+  return wanted;
 }
 
 const singleHtml = await text(`${ORIGIN}/labels`);
-const shelfHtml = await text(`${ORIGIN}/labels?format=shelf`);
 
 const appCss = await inlineFonts(await loadStylesheet(singleHtml));
 const fontVars = extractFontVars(appCss);
 
-const singleCards = extractCards(singleHtml);
-const shelfCards = extractCards(shelfHtml);
+const singleCards = extractCards(singleHtml, PREVIEW_SKUS);
+
+const shelfCards = INCLUDE_SHELF_CARDS
+  ? extractCards(await text(`${ORIGIN}/labels?format=shelf`), null)
+  : [];
+
 console.log(`cards: ${singleCards.length} single, ${shelfCards.length} shelf`);
 
 const section = (title, note, cards) => `
@@ -197,23 +221,26 @@ body {
     <p class="pv-eyebrow">ABI Interiors · Showroom QR</p>
     <h1>Printed showroom cards</h1>
     <p>
-      The real cards, lifted from the running app — same markup, stylesheet and QR codes
-      that go to the printer. Both formats print <b>A5 landscape</b> at 200 × 138 mm, so a
-      showroom stocks one card size and one holder. What you see below is actual size.
+      The real card, lifted from the running app — same markup, stylesheet and QR code that
+      go to the printer. It prints <b>A5 landscape</b> at 200 × 138 mm, and what you see
+      below is actual size.
     </p>
   </header>
 
   ${section(
     "One product per card",
-    "For a single display piece. The code is a sixth of the card width — large enough to scan from a step back, which is how a customer approaches a display.",
+    "The code is a sixth of the card width — large enough to scan from a step back, which is how a customer approaches a display.",
     singleCards,
   )}
-
-  ${section(
-    "Shelf card — up to three products",
-    "For a bay holding several finishes or sizes. It carries one code, which currently points at the first product on the card; a range URL covering all of them doesn't exist yet.",
-    shelfCards,
-  )}
+  ${
+    shelfCards.length > 0
+      ? section(
+          "Shelf card — up to three products",
+          "For a bay holding several finishes or sizes. It carries one code, which currently points at the first product on the card; a range URL covering all of them doesn't exist yet.",
+          shelfCards,
+        )
+      : ""
+  }
 
   <p class="pv-note">
     <b>The finish swatch colours are not data.</b> The gateway carries a finish only as a
@@ -225,9 +252,10 @@ body {
   </p>
 
   <p class="pv-note">
-    <b>Data note.</b> Four of the five products are the same tap in different finishes, so
-    the shelf card repeats a name — that is the demo dataset, not the layout. Prices, SKUs
-    and WELS figures are real; stock states were adjusted to show each availability state.
+    <b>Data note.</b> This is SKU 16243, a live gateway record copied verbatim — its price,
+    dimensions, warranty and nine sibling finishes are all real. A second format for shelves
+    holding several products exists in the app; it is left off this page because the demo
+    dataset is mostly one tap in different finishes, which made it read as a layout fault.
   </p>
 </div>
 `;
