@@ -408,12 +408,310 @@ const ELYSIAN_PULLOUT_BRASS: GatewayProduct = {
     "https://www.abiinteriors.com.au/product/elysian-commercial-3-way-pull-out-filter-tap-brushed-brass/",
 };
 
+/**
+ * SKU 101671 — live record, near verbatim. Backs the sink hotspot in the panorama.
+ *
+ * Two things about this record drove real fixes, which is why it is here in full:
+ * its `watermark_attribute` is `{ license_number: "NO", standard: "" }` — present but
+ * meaning *not certified* — and its FAQ answers are authored HTML, one with an unclosed
+ * tag. Its `downloads.dwg` is `null` rather than `""`.
+ */
+const ONTARIO_DOUBLE_SINK: GatewayProduct = {
+  ...SHARED_DEFAULTS,
+  id: "AU-4662",
+  wooId: 4662,
+  sku: "101671",
+  name: "Ontario Double Kitchen Sink - Stainless Steel",
+  colour: "Stainless Steel",
+  status: "publish",
+  catalogVisibility: "visible",
+  regularPrice: "994.90",
+  salePrice: "",
+  unitCost: "298.40",
+  stockStatus: "instock",
+  stockQuantity: 39,
+  lowStockAmount: 20,
+  bim: {
+    product_3d_files: "ontario-double-kitchen-sink",
+    collection_3d_files: "",
+    range_3d_files: "/bim-library",
+  },
+  downloads: {
+    lowPoly:
+      "https://abi-product-downloads.s3-ap-southeast-2.amazonaws.com/ONTARIO+Double+Kitchen+Sink+W+Strainer+-+Low+Polygon.ifc",
+    highPoly:
+      "https://abi-product-downloads.s3-ap-southeast-2.amazonaws.com/ONTARIO+Double+Kitchen+Sink+W+Strainer+-+High+Polygon.ifc",
+    rfa: "https://abi-product-downloads.s3-ap-southeast-2.amazonaws.com/ONTARIO+Double+Kitchen+Sink+W+Strainer+-+RFA.rfa",
+    dwg: null,
+  },
+  images: [
+    {
+      id: 1489070,
+      src: "https://www.abiinteriors.com.au/wp-content/uploads/Ontario_double_sink_strainer_SS-scaled.jpg",
+    },
+  ],
+  brandfolderImages: [
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/p7hqrnpr87m969jgxkf8n5kc/Ontario_double_sink_strainer_SS.png?format=jpg&crop=5978%2C5971%2Cx0%2Cy29&pad=0%2C0%2C29%2C22",
+      name: "Ontario double sink strainer SS",
+    },
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/gwxq9358skmhtsrg49tngzsv/Portum-48.jpg?format=jpg&crop=4023%2C4024%2Cx0%2Cy1064&pad=0%2C0%2C0%2C1",
+      name: "Portum-48",
+    },
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/6q3vnzhrwjp8bs7vw9rjvhvz/Ontario-Rack-SS-Web.png?format=jpg&crop=1058%2C1080%2Cx22%2Cy0&pad=0%2C22%2C0%2C0",
+      name: "Ontario-Rack-SS-Web",
+    },
+  ],
+  brandfolderSpecImage: [
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/kk9nvmsf8734sqf96smtrp/Ontario_Double_Kitchen_Sink_-_Specifications_1.gif?format=jpg&crop=999%2C1000%2Cx0%2Cy0&pad=0%2C0%2C0%2C1",
+      name: "Ontario Double Kitchen Sink - Specifications 1",
+    },
+  ],
+  attributes: [
+    { name: "Brand", value: "ABI Interiors", visible: true, position: 1, variation: false },
+    { name: "COLOUR", value: "Stainless Steel", visible: true, position: 2, variation: false },
+    { name: "Construction", value: "304 Stainless steel", visible: true, position: 3, variation: false },
+    { name: "Length", value: "1180mm", visible: true, position: 4, variation: false },
+    { name: "Width", value: "450mm", visible: true, position: 5, variation: false },
+    { name: "Depth", value: "250mm", visible: true, position: 6, variation: false },
+    {
+      name: "Capacity",
+      value: "Left: 34.4L\nRight: 21.6L",
+      visible: true,
+      position: 7,
+      variation: false,
+    },
+    {
+      name: "Mount Type",
+      value: "Under-mount or Top-mount",
+      visible: true,
+      position: 8,
+      variation: false,
+    },
+    { name: "Bowl type", value: "Double with drainer", visible: true, position: 10, variation: false },
+    // Note the HTML entity in the NAME — this is what decodeEntities exists for.
+    {
+      name: "What&#039;s In The Box",
+      value:
+        "1 x Ontario Double Kitchen Sink\n2 x Sink Wastes\n2 x Sink Protector Racks\n1 x Underbench Mounting Clips",
+      visible: true,
+      position: 11,
+      variation: false,
+    },
+  ],
+  feature: {
+    feature_1: "304 Stainless Steel",
+    feature_2: "Ease of Installation",
+    feature_3: "WaterSense Cushion System",
+  },
+  shortDescription:
+    "<p>The Ontario is a double bowl stainless steel sink that comes complete with an extended draining tray. It is fitted with ABI’s water-sense cushion system to dampen the sound of water impact during use. Its construction integrates folded drainage points to prevent the build-up of residue.</p>\n<p>The Ontario Double Kitchen Sink would also be suitable for the laundry room and can be mounted either above or below the bench.</p>",
+  documents: [
+    {
+      name: "PRODUCT SPECIFICATION",
+      label: "Ontario Double Kitchen Sink - Specification",
+      link: "https://info-document-uploads.s3.ap-southeast-2.amazonaws.com/Ontario%20Double%20Kitchen%20Sink%20-%20Specification.pdf",
+    },
+  ],
+  faqs: [
+    {
+      faq_title: "Can this sink be wall mounted?",
+      faq_desc: "<p>No this sink is only designed for top mounting or undermounting to benchtops</p>",
+    },
+    {
+      faq_title: "Do you have a waste to match the colour of the kitchen sink?",
+      faq_desc: "<p>Yes all our basket wastes match the sink colour</p>",
+    },
+    {
+      faq_title: "Is the sink suitable to pair with an Insinkerator?",
+      faq_desc: "Our stainless steel kitchen sinks are compatible with an Insinkerator.",
+    },
+  ],
+  warrantyResults: [
+    {
+      name: "Ontario Double Kitchen Sink - Stainless Steel",
+      sku: "101671",
+      structure: { residential: "Lifetime", non_residential: "10", outdoor: "0" },
+      finish: { residential: "5", non_residential: "1", outdoor: "0" },
+      other: { residential: "2", non_residential: "1", outdoor: "0" },
+    },
+  ],
+  rainbowFamily: [
+    { group_name: "Ontario Double Kitchen Sink", id: null, sku: "101661", name: "Ontario Double Kitchen Sink - Brushed Gunmetal" },
+    { group_name: "Ontario Double Kitchen Sink", id: null, sku: "101651", name: "Ontario Double Kitchen Sink - Brushed Copper" },
+    { group_name: "Ontario Double Kitchen Sink", id: null, sku: "101671", name: "Ontario Double Kitchen Sink - Stainless Steel" },
+    { group_name: "Ontario Double Kitchen Sink", id: null, sku: "10447", name: "Ontario Double Kitchen Sink - Brushed Brass" },
+  ],
+  awardBadges: [],
+  welsRating: "",
+  welsLitres: "",
+  welsRegistration: "",
+  xSell: { name: "", set: [], description: "" },
+  infoDoc: {
+    install_doc:
+      "https://cdn.bfldr.com/8266KQUL/at/j9q8p75g2mmt2qgvt6k8nv/ONTARIO_Double_Kitchen_Sink_INSTALL.pdf",
+    spec_image:
+      "https://cdn.bfldr.com/8266KQUL/at/ps6z8x9p93vn4vj9n54fqkjj/Ontario_Sink_SPEC-01.svg",
+    spec_attribute: [
+      { name: "Recommended Use", value: "Domestic/Commercial" },
+      { name: "Installation", value: "Undermount, Top Mount" },
+      { name: "Overflow", value: "No" },
+      { name: "Capacity", value: "Left: 34.4L | Right: 21.6L" },
+      // A real padding row: both fields empty. Must not become a spec line.
+      { name: "", value: "" },
+    ],
+    // Present but NOT a certification — "NO" with no standard.
+    watermark_attribute: { license_number: "NO", standard: "", watermark_image: "" },
+  },
+  permalink: "https://www.abiinteriors.com.au/product/ontario-double-kitchen-sink-stainless-steel/",
+};
+
+/**
+ * SKU 15718 — live record. Backs the cabinetry hotspot.
+ *
+ * Two caveats worth knowing before this is shown to anyone: ABI's cabinetry range is
+ * bathroom vanities, so in a kitchen scene it is a stand-in for the joinery rather than
+ * the actual product; and this particular SKU's own description opens with "this product
+ * is discontinued". Swap it for a current cabinetry SKU before any real demo.
+ *
+ * It is still a useful fixture: `manageStock` is false, so it exercises the path where a
+ * quantity must not be shown.
+ */
+const ADDISON_VANITY: GatewayProduct = {
+  ...SHARED_DEFAULTS,
+  id: "AU-1051446",
+  wooId: 1051446,
+  sku: "15718",
+  name: "Addison 4-Drawer with Shelves 1614mm - White Ash Oak",
+  colour: "White Ash Oak",
+  status: "publish",
+  catalogVisibility: "visible",
+  regularPrice: "1984.90",
+  salePrice: "",
+  unitCost: "742.10",
+  stockStatus: "instock",
+  stockQuantity: 0,
+  lowStockAmount: null,
+  manageStock: false,
+  bim: {
+    product_3d_files: "addison-4-drawer-vanity-with-shelves-1614mm",
+    collection_3d_files: "Vanity-Collection",
+    range_3d_files: "/bim-library",
+  },
+  images: [
+    {
+      id: 1462616,
+      src: "https://www.abiinteriors.com.au/wp-content/uploads/Addison-1614mm-Drawer-w-Shelf-White-Ash-Oak-1_web-3-scaled.jpg",
+    },
+  ],
+  brandfolderImages: [
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/rfprm9vp24rpkt2vvjkgt6kr/Addison%204-Drawer%20with%20Shelves%201614mm_V1_White%20Ash%20Oak.jpg?trim=-0.01,0,0.01,-0.01&width=1080&height=1080&format=jpg",
+      name: "Addison 4-Drawer with Shelves V1 White Ash Oak",
+    },
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/8vxzv8xk7k5kkph77whg4n2s/Addison%204-Drawer%20with%20Shelves%201614mm_V2_White%20Ash%20Oak.jpg?trim=-0.01,0,0.01,-0.01&width=1080&height=1080&format=jpg",
+      name: "Addison 4-Drawer with Shelves V2 White Ash Oak",
+    },
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/6njtsm3tk54xgp6nv8sb/Addison%204-Drawer%20with%20Shelves%201614mm_V3_White%20Ash%20Oak.jpg?trim=0.01,0.01,0.01,0.01&width=1080&height=1080&format=jpg",
+      name: "Addison 4-Drawer with Shelves V3 White Ash Oak",
+    },
+  ],
+  brandfolderSpecImage: [
+    {
+      src: "https://cdn.bfldr.com/8266KQUL/at/bhnthfkwmqhk3btxh7s3fm/Addison_4-Drawer_with_Shelves_1614mm_-_1_Cut-Out.svg",
+      name: "Addison 4-Drawer with Shelves 1614mm - 1 Cut-Out",
+    },
+  ],
+  attributes: [
+    { name: "Brand", value: "ABI Interiors", visible: true, position: 1, variation: false },
+    { name: "COLOUR", value: "White Ash Oak", visible: true, position: 2, variation: false },
+    {
+      name: "Construction",
+      value: "High Density Moisture Resistant Particle Board Soft Close Drawers",
+      visible: true,
+      position: 4,
+      variation: false,
+    },
+    {
+      name: "Dimensions (mm)",
+      value: "Length: 1614mm\nDepth: 450mm\nHeight: 500mm",
+      visible: true,
+      position: 5,
+      variation: false,
+    },
+    { name: "Mounting", value: "Wall Mounted", visible: true, position: 6, variation: false },
+    {
+      name: "Lead Time",
+      value:
+        "10 Working days for cabinetry assembly + allow shipping days between 3-7 business days depending on the state",
+      visible: true,
+      position: 9,
+      variation: false,
+    },
+  ],
+  feature: {
+    feature_1: "High Density Moisture Resistant Particle Board",
+    feature_2: "Soft Close",
+    feature_3: "Wall Mounted",
+  },
+  shortDescription:
+    "<p>Distinguished by its smart drawer configuration with centrally positioned open shelves, our Addison 4-drawer is a double wall mounted bathroom vanity that’s perfect for shared bathrooms. It has integrated cut-outs for plumbing services and for easy installation.</p>\n<p><strong>Please note:</strong> vanities are made to order — allow 10 working days for cabinetry assembly plus 3–7 business days shipping.</p>",
+  documents: [
+    {
+      name: "Specification Sheet",
+      label: "Addison 4-Drawer with Shelves 1614mm - 1 Cut Out - Specification",
+      link: "https://info-document-uploads.s3.ap-southeast-2.amazonaws.com/Addison%204-Drawer%20with%20Shelves%201614mm%20-%201%20Cut%20Out%20-%20Specification.pdf",
+    },
+  ],
+  faqs: [
+    {
+      faq_title: "What type of coating is used on this product, is it durable?",
+      faq_desc:
+        "<p>Made from a dense moisture proof particle board, finished with either a heavy pressed timber laminate grain or a 2PAC finish. The timber laminate is very resistant to damage, 2PAC is a high quality finish however can be damaged if not careful.</p>",
+    },
+    {
+      faq_title: "What hardware is used in your vanity cabinetry?",
+      faq_desc:
+        "Our vanities are fitted with premium hardware for durability, long term performance and smooth everyday use. All vanity doors use BLUM soft close hinges, and all drawers are fitted with DTC soft close runners.",
+    },
+  ],
+  warrantyResults: [
+    {
+      name: "Addison 4-Drawer with Shelves 1614mm - White Ash Oak",
+      sku: "15718",
+      structure: { residential: "10", non_residential: "4", outdoor: "0" },
+      finish: { residential: "5", non_residential: "2", outdoor: "0" },
+      other: { residential: "3", non_residential: "1", outdoor: "0" },
+    },
+  ],
+  rainbowFamily: [
+    { group_name: "Addison 4-Drawer with Shelves 1614mm", id: null, sku: "15719", name: "Addison 4-Drawer with Shelves 1614mm - White" },
+    { group_name: "Addison 4-Drawer with Shelves 1614mm", id: null, sku: "15717", name: "Addison 4-Drawer with Shelves 1614mm - Pure Oak" },
+    { group_name: "Addison 4-Drawer with Shelves 1614mm", id: null, sku: "15718", name: "Addison 4-Drawer with Shelves 1614mm - White Ash Oak" },
+  ],
+  awardBadges: [],
+  welsRating: "",
+  welsLitres: "",
+  welsRegistration: "",
+  xSell: { name: "", set: [], description: "" },
+  infoDoc: {},
+  permalink:
+    "https://www.abiinteriors.com.au/product/addison-4-drawer-with-shelves-1614mm-white-ash-oak/",
+};
+
 export const FIXTURES: GatewayProduct[] = [
   MINI_FILTER_TAP_GUNMETAL,
   MINI_FILTER_TAP_BRASS,
   MINI_FILTER_TAP_STAINLESS,
   ELYSIAN_PULLOUT_BRASS,
   MINI_FILTER_TAP_ANTIQUE_BRONZE,
+  ONTARIO_DOUBLE_SINK,
+  ADDISON_VANITY,
 ];
 
 export const FIXTURE_NOTES: Record<string, string> = {

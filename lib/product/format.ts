@@ -60,6 +60,25 @@ export function warrantyPeriod(raw: string): string {
   return raw;
 }
 
+const ENTITIES: Record<string, string> = {
+  "&amp;": "&",
+  "&#039;": "'",
+  "&#39;": "'",
+  "&quot;": '"',
+  "&lt;": "<",
+  "&gt;": ">",
+  "&nbsp;": " ",
+};
+
+/**
+ * Attribute and spec *names* arrive HTML-escaped from Woo — a real record labels a row
+ * `What&#039;s In The Box`. Values go through the HTML sanitiser, which decodes them, but
+ * names are rendered as text and would otherwise show the raw entity.
+ */
+export function decodeEntities(value: string): string {
+  return value.replace(/&(?:amp|#0?39|quot|lt|gt|nbsp);/g, (match) => ENTITIES[match] ?? match);
+}
+
 /** `structure` / `non_residential` → `Structure` / `Non residential`. */
 export function humanise(key: string): string {
   const spaced = key.replace(/[_-]+/g, " ").trim();

@@ -18,7 +18,10 @@ export function Faqs({ faqs }: { faqs: CustomerProduct["faqs"] }) {
               </span>
               <span className="text-sm font-medium">{faq.question}</span>
             </summary>
-            <p className="mt-2 pl-6 text-sm leading-relaxed text-ink-soft">{faq.answer}</p>
+            <div
+              className="rich-text mt-2 pl-6 text-sm text-ink-soft"
+              dangerouslySetInnerHTML={{ __html: faq.answerHtml }}
+            />
           </details>
         </li>
       ))}

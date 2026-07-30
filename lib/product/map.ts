@@ -1,6 +1,13 @@
 import sanitizeHtml from "sanitize-html";
 
-import { finishLabel, humanise, parsePrice, stockLabel, warrantyPeriod } from "./format";
+import {
+  decodeEntities,
+  finishLabel,
+  humanise,
+  parsePrice,
+  stockLabel,
+  warrantyPeriod,
+} from "./format";
 import type { CustomerProduct, GatewayProduct, WarrantyPeriods } from "./types";
 
 /**
@@ -98,15 +105,17 @@ function specs(product: GatewayProduct): { name: string; valueHtml: string }[] {
     // Colour and brand already lead the page; repeating them in the table is noise.
     if (attribute.name === "COLOUR" || attribute.name === "Brand") continue;
     rows.push({
-      name: attribute.name,
+      name: decodeEntities(attribute.name),
       valueHtml: sanitizeHtml(attribute.value.replace(/\n/g, "<br />"), INLINE_TEXT),
     });
   }
 
   for (const spec of product.infoDoc.spec_attribute ?? []) {
-    if (!spec.value?.trim()) continue;
-    if (rows.some((row) => row.name === spec.name)) continue;
-    rows.push({ name: spec.name, valueHtml: sanitizeHtml(spec.value, INLINE_TEXT) });
+    // Real records carry padding rows with both name and value empty.
+    if (!spec.name?.trim() || !spec.value?.trim()) continue;
+    const name = decodeEntities(spec.name);
+    if (rows.some((row) => row.name === name)) continue;
+    rows.push({ name, valueHtml: sanitizeHtml(spec.value, INLINE_TEXT) });
   }
 
   return rows;
@@ -130,6 +139,17 @@ function warranty(product: GatewayProduct): CustomerProduct["warranty"] {
   return rows;
 }
 
+function watermarkOf(product: GatewayProduct): CustomerProduct["watermark"] {
+  const attribute = product.infoDoc.watermark_attribute;
+  if (!attribute) return null;
+
+  const standard = attribute.standard?.trim();
+  const licence = attribute.license_number?.trim();
+  if (!standard || !licence || licence.toUpperCase() === "NO") return null;
+
+  return { licenseNumber: licence, standard };
+}
+
 function downloads3d(product: GatewayProduct): { label: string; link: string }[] {
   // `bim` holds path fragments rather than URLs, so only `downloads` is linkable.
   const labels: Record<keyof GatewayProduct["downloads"], string> = {
@@ -139,9 +159,10 @@ function downloads3d(product: GatewayProduct): { label: string; link: string }[]
     lowPoly: "3D model — low poly",
   };
 
-  return (Object.keys(labels) as (keyof GatewayProduct["downloads"])[])
-    .filter((key) => Boolean(product.downloads[key]))
-    .map((key) => ({ label: labels[key], link: product.downloads[key] }));
+  return (Object.keys(labels) as (keyof GatewayProduct["downloads"])[]).flatMap((key) => {
+    const link = product.downloads[key];
+    return link ? [{ label: labels[key], link }] : [];
+  });
 }
 
 export function toCustomerProduct(product: GatewayProduct): CustomerProduct {
@@ -182,12 +203,11 @@ export function toCustomerProduct(product: GatewayProduct): CustomerProduct {
         }
       : null,
 
-    watermark: product.infoDoc.watermark_attribute
-      ? {
-          licenseNumber: product.infoDoc.watermark_attribute.license_number,
-          standard: product.infoDoc.watermark_attribute.standard,
-        }
-      : null,
+    // The block exists on products that are NOT certified: a real kitchen sink carries
+    // `{ license_number: "NO", standard: "" }`. Presence alone is not certification, and
+    // rendering a WaterMark badge off it would be a false compliance claim, so both a
+    // standard and a real licence number are required.
+    watermark: watermarkOf(product),
 
     warranty: warranty(product),
 
@@ -202,9 +222,14 @@ export function toCustomerProduct(product: GatewayProduct): CustomerProduct {
 
     downloads3d: downloads3d(product),
 
+    // Answers are authored HTML on real records — some wrapped in <p>, one with an
+    // unclosed tag — so they are sanitised and rendered as markup rather than as text.
     faqs: product.faqs
-      .filter((faq) => faq.faq_title && faq.faq_desc)
-      .map((faq) => ({ question: faq.faq_title, answer: faq.faq_desc })),
+      .filter((faq) => faq.faq_title?.trim() && faq.faq_desc?.trim())
+      .map((faq) => ({
+        question: decodeEntities(faq.faq_title),
+        answerHtml: sanitizeHtml(faq.faq_desc, RICH_TEXT),
+      })),
 
     finishes: product.rainbowFamily.map((sibling) => ({
       sku: sibling.sku,

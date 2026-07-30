@@ -74,7 +74,13 @@ export type GatewayProduct = {
   shortDescription: string;
 
   documents: { name: string; label: string; link: string }[];
-  downloads: { lowPoly: string; highPoly: string; rfa: string; dwg: string };
+  /** Values are `""` on some records and `null` on others — both mean "no file". */
+  downloads: {
+    lowPoly: string | null;
+    highPoly: string | null;
+    rfa: string | null;
+    dwg: string | null;
+  };
   /**
    * Path fragments and library slugs, not URLs — `{ product_3d_files: "mini-water-filter-tap" }`.
    * Declared so it is clear this cannot be linked directly; `downloads` is the linkable one.
@@ -156,7 +162,7 @@ export type CustomerProduct = {
   documents: { label: string; link: string }[];
   downloads3d: { label: string; link: string }[];
 
-  faqs: { question: string; answer: string }[];
+  faqs: { question: string; answerHtml: string }[];
 
   finishes: { sku: string; name: string; label: string; isCurrent: boolean }[];
 

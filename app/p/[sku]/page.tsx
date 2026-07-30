@@ -8,8 +8,11 @@ import { Gallery } from "@/components/product/Gallery";
 import { PriceAndStock } from "@/components/product/PriceAndStock";
 import { RequiredWith } from "@/components/product/RequiredWith";
 import { SpecTable } from "@/components/product/SpecTable";
+import { ThreeDView } from "@/components/product/ThreeDView";
 import { WarrantyTable } from "@/components/product/WarrantyTable";
 import { Section } from "@/components/ui/Section";
+import { formatPrice, parsePrice, stockLabel } from "@/lib/product/format";
+import { panoramaFor, type ResolvedHotspot } from "@/lib/panorama";
 import { toCustomerProduct } from "@/lib/product/map";
 import { productSource } from "@/lib/product/fixture-source";
 import { normaliseSku } from "@/lib/product/source";
@@ -136,12 +139,48 @@ export default async function ProductPage({ params }: PageProps) {
   }
 
   const product = toCustomerProduct(result.product);
+  const panorama = panoramaFor(product.sku);
+
+  // Each hotspot names a SKU; its details are looked up here rather than duplicated into
+  // the panorama config, so a price or stock change never leaves a stale marker behind.
+  const hotspots: ResolvedHotspot[] = [];
+  for (const hotspot of panorama?.hotspots ?? []) {
+    const found = await productSource.lookupBySku(hotspot.sku);
+    if (found.kind !== "found") continue;
+    if (!isVisibleTo(found.product, AUDIENCE)) continue;
+
+    const sale = parsePrice(found.product.salePrice);
+    const regular = parsePrice(found.product.regularPrice);
+
+    hotspots.push({
+      ...hotspot,
+      name: found.product.rainbowFamily[0]?.group_name ?? found.product.name,
+      finish: found.product.colour,
+      price: formatPrice(sale !== null && regular !== null && sale < regular ? sale : regular),
+      availability: stockLabel(
+        found.product.stockStatus,
+        found.product.stockQuantity,
+        found.product.lowStockAmount,
+      ).label,
+      isCurrent: hotspot.sku === product.sku,
+    });
+  }
 
   return (
     <Shell>
       <div className="grid gap-8 md:grid-cols-2 md:gap-12">
         <div className="md:sticky md:top-8 md:self-start">
           <Gallery images={product.images} productName={product.name} />
+
+          {panorama && (
+            <div className="mt-4">
+              <ThreeDView panorama={panorama} hotspots={hotspots} />
+              <p className="mt-2 text-xs text-ink-faint">
+                Look around the showroom this piece is displayed in
+                {hotspots.length > 0 && ", and tap the marker for product details"}.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-8">
