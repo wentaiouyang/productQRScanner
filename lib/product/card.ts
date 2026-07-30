@@ -27,9 +27,13 @@ export type CardProduct = {
   availability: string;
   tone: StockTone;
 
-  /** Uppercase monospace lines. Empty entries are dropped by the components. */
+  /**
+   * Uppercase monospace lines. Kept as separate entries rather than one joined string:
+   * dimension text runs long on some categories, and joining it to the warranty produces
+   * a wrap that orphans a single word.
+   */
   specLine: string;
-  detailLine: string;
+  detailLines: string[];
 
   finishes: CardFinish[];
   qr: string;
@@ -106,7 +110,9 @@ export function toCardProduct(product: GatewayProduct, qr: string): CardProduct 
     product.welsLitres ? `${product.welsLitres} L/MIN` : null,
   ].filter(Boolean);
 
-  const detail = [dimensionSummary(product), warrantyHeadline(product)].filter(Boolean);
+  const detailLines = [dimensionSummary(product), warrantyHeadline(product)].filter(
+    (line): line is string => Boolean(line),
+  );
 
   const { text, tone } = availability(product);
   const sale = parsePrice(product.salePrice);
@@ -124,7 +130,7 @@ export function toCardProduct(product: GatewayProduct, qr: string): CardProduct 
     tone,
 
     specLine: spec.join(" · "),
-    detailLine: detail.join(" · "),
+    detailLines,
 
     finishes: product.rainbowFamily.map((sibling) => {
       const label = finishLabel(sibling.name, sibling.group_name || group);

@@ -19,22 +19,22 @@ export function ShelfCard({
   footnote: string;
 }) {
   return (
-    <article className="card card-a4 flex flex-col bg-white text-ink">
+    <article className="card card-a5 flex flex-col bg-white text-ink">
       <div className="border-t-[1.5px] border-ink" />
 
       <div className="flex-1">
         {products.map((product, index) => (
           <div
             key={product.sku}
-            className={index > 0 ? "border-t border-[#c9c5bd] pt-5 mt-5" : "pt-5"}
+            className={index > 0 ? "border-t border-[#c9c5bd] pt-4 mt-4" : "pt-4"}
           >
             <div className="grid grid-cols-[1fr_auto] items-start gap-x-8">
               <div className="min-w-0">
-                <h3 className="font-display text-[27px] leading-tight tracking-[-0.01em]">
+                <h3 className="font-display text-[23px] leading-tight tracking-[-0.01em]">
                   {product.name}
                 </h3>
 
-                <div className="mt-2.5 grid grid-cols-[minmax(0,auto)_1fr] items-start gap-x-8">
+                <div className="mt-2 grid grid-cols-[minmax(0,auto)_1fr] items-start gap-x-8">
                   <div className="flex items-center gap-2.5">
                     <Dot swatch={product.swatch} size={15} />
                     <span className="font-display text-[16px] italic whitespace-nowrap">
@@ -48,12 +48,12 @@ export function ShelfCard({
                   </div>
                 </div>
 
-                <div className="mt-3">
+                <div className="mt-2.5">
                   <FinishDots finishes={product.finishes} />
                 </div>
               </div>
 
-              <p className="font-display text-[34px] leading-none">
+              <p className="font-display text-[29px] leading-none">
                 {product.price ?? (
                   <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint">
                     On application
@@ -65,10 +65,10 @@ export function ShelfCard({
         ))}
       </div>
 
-      <div className="mt-5 flex items-center justify-between gap-8 border-t border-[#c9c5bd] pt-4">
+      <div className="mt-4 flex items-center justify-between gap-8 border-t border-[#c9c5bd] pt-3">
         <div className="flex items-center gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={qr} alt="Scan for product details" className="h-[58px] w-[58px]" />
+          <img src={qr} alt="Scan for product details" className="h-[52px] w-[52px]" />
           <p className="font-display text-[14px] italic text-ink-soft">
             Scan for specs, finishes and live availability.
           </p>

@@ -33,7 +33,9 @@ export function ProductCard({
 
           <div className="mt-6 space-y-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-faint">
             {product.specLine && <p>{product.specLine}</p>}
-            {product.detailLine && <p>{product.detailLine}</p>}
+            {product.detailLines.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
           </div>
         </div>
 

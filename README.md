@@ -65,6 +65,37 @@ outright and should not be trusted:
 - Sibling photography — only 16243 and 16149 have real image URLs. The other finishes
   reuse 16243's gunmetal photos, so the Brushed Brass page shows a gunmetal tap.
 
+## Showroom cards (`/labels`)
+
+Prints the physical cards that sit beside a product, in two formats — one product per
+card, or up to three on a shelf card. Both print **A5 landscape**, so a showroom stocks
+one card size and one holder.
+
+The design uses three type roles and nothing else: a high-contrast serif for the product
+name and price, the same serif in italic for the finish and soft notes, and letterspaced
+uppercase monospace for anything technical. Colour appears only in the finish swatches.
+
+QR codes on cards are rendered as **SVG**, not PNG — a printed code should be resolution
+independent.
+
+### The swatch colours are a brand decision, not data
+
+The gateway carries a finish only as a name (`colour: "Brushed Gunmetal"`); there is no hex
+anywhere in the record. So [`lib/finish-colours.ts`](lib/finish-colours.ts) maps finish
+names to colours, and **every value in it is an approximation eyeballed from product
+photography.** It needs sign-off from whoever owns ABI's colour standards before anything
+is printed — a card showing the wrong brass is a brand problem, not a bug.
+
+Finishes missing from that table render as a dashed outline instead of a guessed colour,
+and `/labels` lists them above the cards, so a gap is caught before a print run.
+
+### Two other things to know
+
+- **A shelf card carries one code for several products**, so it points at the first product
+  on the card. A range URL covering all of them doesn't exist yet.
+- The **warranty headline** condenses a per-component, per-use-class matrix into one
+  phrase: any component covered for life wins, otherwise the longest residential period.
+
 ## Structure
 
 ```
@@ -120,7 +151,9 @@ without someone present to sign in.
 - **Staff view not built.** Cost, margin and stock detail behind Microsoft sign-in. Needs
   `products.read` on a department security group — the faster of the two access requests,
   and the one currently unblocked.
-- **Label generation (`/labels`) not built.** Bulk QR sheets for printing.
+- **Print output not verified on paper.** The card sizes, `@page` rules and page breaks are
+  standard CSS and the cards measure exactly 200 × 138 mm on screen, but nothing has been
+  through an actual printer yet.
 - **Not-found returns HTTP 200.** The page content is right, but a genuinely missing SKU
   should return 404 so broken labels show up in monitoring. Next.js only sets 404 via
   `notFound()`, which cannot receive the scanned SKU, so this needs a small refactor.

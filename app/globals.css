@@ -75,3 +75,47 @@ body {
   font-weight: 600;
   color: var(--color-ink);
 }
+
+/**
+ * Printed showroom cards.
+ *
+ * Sized in millimetres so what appears on screen is what comes out of the printer. The
+ * card is inset a few millimetres inside its page: consumer printers cannot print to the
+ * paper edge, and a frame clipped on one side looks like a mistake rather than a margin.
+ */
+.card {
+  box-sizing: border-box;
+  border: 1px solid #c9c5bd;
+  background-color: #fff;
+}
+
+.card-a5 {
+  width: 200mm;
+  height: 138mm;
+  padding: 13mm 14mm;
+}
+
+.card-a4 {
+  width: 285mm;
+  height: 198mm;
+  padding: 14mm 16mm;
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background-color: #fff;
+  }
+
+  .card {
+    break-inside: avoid;
+    break-after: page;
+  }
+
+  .card:last-of-type {
+    break-after: auto;
+  }
+}
