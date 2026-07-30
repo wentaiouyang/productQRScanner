@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/**
+ * The page is read on a phone, held at arm's length, in a lit showroom. That drives
+ * every choice here: a warm off-white ground rather than pure white, generous type
+ * sizes, and one metallic accent borrowed from the product finishes.
+ *
+ * Light only, deliberately. A showroom page that inverts to dark on half the phones
+ * that scan it would undermine the product photography, which is all shot on white.
+ */
+@theme {
+  --color-canvas: #f6f4f1;
+  --color-surface: #ffffff;
+  --color-ink: #1b1917;
+  --color-ink-soft: #57504a;
+  --color-ink-faint: #8b837a;
+  --color-rule: #e2ddd6;
+  --color-brass: #8a6a3d;
+  --color-brass-soft: #f2ebdf;
+
+  --color-stock-good: #2f6b47;
+  --color-stock-low: #9a6212;
+  --color-stock-none: #8a4a3c;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-instrument-serif), Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Small uppercase label used for section headings and field names. */
+.eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-ink-faint);
+  font-weight: 500;
+}
+
+/*
+ * Product copy arrives as sanitised HTML from Woo, so it cannot carry classes.
+ * These rules style it from the outside.
+ */
+.rich-text > p {
+  margin-bottom: 0.85rem;
+  line-height: 1.65;
+}
+
+.rich-text > p:last-child {
+  margin-bottom: 0;
+}
+
+.rich-text a {
+  color: var(--color-brass);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.rich-text ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 0.85rem;
+}
+
+.rich-text strong {
+  font-weight: 600;
+  color: var(--color-ink);
+}
