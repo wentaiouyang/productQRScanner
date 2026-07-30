@@ -178,6 +178,7 @@ const SHARED_DEFAULTS = {
   region: "au",
   type: "simple",
   manageStock: true,
+  eta: "",
   brandfolderImageToggle: "yes",
   downloads: { lowPoly: "", highPoly: "", rfa: "", dwg: "" },
   bim: { product_3d_files: "", collection_3d_files: "", range_3d_files: "" },

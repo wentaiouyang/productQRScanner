@@ -15,6 +15,8 @@ const geistMono = Geist_Mono({
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   weight: "400",
+  // The italic carries finish names and soft notes on the printed showroom cards.
+  style: ["normal", "italic"],
   subsets: ["latin"],
 });
 

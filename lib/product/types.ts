@@ -52,6 +52,8 @@ export type GatewayProduct = {
   stockQuantity: number | null;
   lowStockAmount: number | null;
   manageStock: boolean;
+  /** Restock date as free text. Empty on most records. */
+  eta: string;
 
   /** Usually a single hero image. The gallery lives in `brandfolderImages`. */
   images: { id: number; src: string }[];
