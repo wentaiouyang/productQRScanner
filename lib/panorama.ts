@@ -42,9 +42,11 @@ export type ResolvedHotspot = Hotspot & {
 const DEFAULT_PANORAMA: Panorama = {
   src: "/panorama/showroom-kitchen.jpg",
   label: "Showroom kitchen display",
-  // 0° opens facing the dining room; 90° opens on the kitchen bench and tapware, which
-  // is what a customer scanning a tap label is there to look at.
-  initialBearing: 90,
+  // 0° opens facing the dining room; the kitchen bench and tapware sit around 90°, which
+  // is what a customer scanning a tap label is there to look at. 92° is the midpoint of
+  // the three hotspots below, so all of them are reachable in the opening frame even on a
+  // portrait phone, where the horizontal field of view is much narrower.
+  initialBearing: 92,
   hotspots: [
     // The gooseneck filter tap on the right of the island.
     //

@@ -7,13 +7,41 @@ import type { Panorama, ResolvedHotspot } from "@/lib/panorama";
 
 type Status = "loading" | "ready" | "error";
 
-const FOV_DEFAULT = 72;
-const FOV_MIN = 38;
-const FOV_MAX = 86;
-/** Degrees of rotation per pixel dragged. */
-const DRAG_SENSITIVITY = 0.13;
+/**
+ * The camera's vertical field of view is derived from the aspect ratio rather than fixed.
+ *
+ * A fixed 72° vertical fov behaves completely differently between shapes: on a desktop
+ * window it gives ~97° horizontally, but on a portrait phone (aspect ≈ 0.46) it collapses
+ * to ~40°, which is a keyhole — markers 26° apart fall off both edges. Holding the
+ * horizontal view roughly constant instead keeps the scene legible on any device.
+ */
+const TARGET_HORIZONTAL_FOV = 95;
+/** Past this, a portrait phone's vertical stretch starts to look like a fisheye. */
+const VERTICAL_FOV_MAX = 100;
+const VERTICAL_FOV_MIN = 24;
+
+/** 1 is "fit"; larger magnifies. Zoom is stored separately so a device rotation, which
+ *  changes the aspect and therefore the base fov, does not discard the user's zoom. */
+const ZOOM_MIN = 1;
+/**
+ * Capped by the panorama's own resolution, not by taste. The source is 2880 × 1440, so at
+ * this zoom a portrait phone shows roughly 25° of arc — about 200 source pixels stretched
+ * across 750 device pixels. Going further just magnifies the blur. Re-exporting the
+ * panorama at 5760 × 2880 or larger is what would buy more usable zoom.
+ */
+const ZOOM_MAX = 2;
+
 /** Looking fully vertical inverts the horizon, so pitch stops short of the poles. */
 const MAX_PITCH = 85;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, value));
+
+function verticalFovFor(aspect: number): number {
+  const halfHorizontal = (TARGET_HORIZONTAL_FOV / 2) * (Math.PI / 180);
+  const halfVertical = Math.atan(Math.tan(halfHorizontal) / aspect);
+  return clamp((halfVertical * 360) / Math.PI, VERTICAL_FOV_MIN, VERTICAL_FOV_MAX);
+}
 
 export default function PanoramaViewer({
   panorama,
@@ -32,6 +60,8 @@ export default function PanoramaViewer({
   const [status, setStatus] = useState<Status>("loading");
   const [hasInteracted, setHasInteracted] = useState(false);
   const [openHotspot, setOpenHotspot] = useState<string | null>(null);
+
+  const openDetails = hotspots.find((hotspot) => hotspot.sku === openHotspot) ?? null;
 
   const hotspotKey = hotspots
     .map((hotspot) => `${hotspot.sku}:${hotspot.bearing}:${hotspot.elevation}`)
@@ -81,12 +111,8 @@ export default function PanoramaViewer({
       texture.colorSpace = THREE.SRGBColorSpace;
 
       const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(
-        FOV_DEFAULT,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        1100,
-      );
+      const aspect = container.clientWidth / Math.max(container.clientHeight, 1);
+      const camera = new THREE.PerspectiveCamera(verticalFovFor(aspect), aspect, 0.1, 1100);
 
       // The image is mapped to the inside of the sphere, so the back faces are the
       // visible ones.
@@ -105,7 +131,14 @@ export default function PanoramaViewer({
 
       let bearing = panorama.initialBearing ?? 0;
       let pitch = 0;
+      let zoom = ZOOM_MIN;
       let dirty = true;
+
+      const applyZoom = () => {
+        camera.fov = verticalFovFor(camera.aspect) / zoom;
+        camera.updateProjectionMatrix();
+        dirty = true;
+      };
 
       const target = new THREE.Vector3();
       const projected = new THREE.Vector3();
@@ -165,41 +198,77 @@ export default function PanoramaViewer({
       teardown.push(() => cancelAnimationFrame(frame));
 
       const canvas = renderer.domElement;
-      let pointerId: number | null = null;
-      let lastX = 0;
-      let lastY = 0;
+
+      // Every active pointer is tracked, not just the first: two fingers is a pinch, and
+      // the canvas sets `touch-action: none`, so the browser's own pinch is unavailable.
+      const pointers = new Map<number, { x: number; y: number }>();
+      let pinchStartDistance = 0;
+      let pinchStartZoom = zoom;
+
+      const pinchDistance = () => {
+        const [first, second] = [...pointers.values()];
+        return Math.hypot(first.x - second.x, first.y - second.y);
+      };
 
       const onPointerDown = (event: PointerEvent) => {
-        pointerId = event.pointerId;
-        lastX = event.clientX;
-        lastY = event.clientY;
-        canvas.setPointerCapture(event.pointerId);
+        pointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        try {
+          canvas.setPointerCapture(event.pointerId);
+        } catch {
+          // Capture fails if the pointer has already gone away; dragging still works via
+          // the element's own move events, so this must not abort the handler.
+        }
         setHasInteracted(true);
+        // Starting a gesture on the image dismisses an open marker panel.
+        setOpenHotspot(null);
+
+        if (pointers.size === 2) {
+          pinchStartDistance = pinchDistance();
+          pinchStartZoom = zoom;
+        }
       };
 
       const onPointerMove = (event: PointerEvent) => {
-        if (event.pointerId !== pointerId) return;
-        bearing -= (event.clientX - lastX) * DRAG_SENSITIVITY;
-        pitch = Math.max(
-          -MAX_PITCH,
-          Math.min(MAX_PITCH, pitch + (event.clientY - lastY) * DRAG_SENSITIVITY),
-        );
-        lastX = event.clientX;
-        lastY = event.clientY;
+        const previous = pointers.get(event.pointerId);
+        if (!previous) return;
+
+        const x = event.clientX;
+        const y = event.clientY;
+        pointers.set(event.pointerId, { x, y });
+
+        if (pointers.size >= 2) {
+          if (pinchStartDistance > 0) {
+            // Fingers apart → more zoom → narrower field of view.
+            const scale = pinchDistance() / pinchStartDistance;
+            zoom = clamp(pinchStartZoom * scale, ZOOM_MIN, ZOOM_MAX);
+            applyZoom();
+          }
+          return;
+        }
+
+        // Degrees per pixel derived from the current field of view, so the image tracks
+        // the finger at any zoom level. A fixed sensitivity felt right at one zoom only,
+        // and far too fast once zoomed in.
+        const perPixel = camera.fov / container.clientHeight;
+        bearing -= (x - previous.x) * perPixel;
+        pitch = clamp(pitch + (y - previous.y) * perPixel, -MAX_PITCH, MAX_PITCH);
         dirty = true;
       };
 
       const onPointerUp = (event: PointerEvent) => {
-        if (event.pointerId !== pointerId) return;
-        canvas.releasePointerCapture(event.pointerId);
-        pointerId = null;
+        pointers.delete(event.pointerId);
+        if (canvas.hasPointerCapture(event.pointerId)) {
+          canvas.releasePointerCapture(event.pointerId);
+        }
+        // Lifting one finger of a pinch leaves the other mid-gesture; its stored position
+        // is already current, so dragging continues without a jump.
+        pinchStartDistance = 0;
       };
 
       const onWheel = (event: WheelEvent) => {
         event.preventDefault();
-        camera.fov = Math.max(FOV_MIN, Math.min(FOV_MAX, camera.fov + event.deltaY * 0.05));
-        camera.updateProjectionMatrix();
-        dirty = true;
+        zoom = clamp(zoom * (1 - event.deltaY * 0.0012), ZOOM_MIN, ZOOM_MAX);
+        applyZoom();
       };
 
       // Keyboard panning, so the viewer is usable without a pointer.
@@ -235,9 +304,10 @@ export default function PanoramaViewer({
         const { clientWidth, clientHeight } = container;
         if (clientWidth === 0 || clientHeight === 0) return;
         camera.aspect = clientWidth / clientHeight;
-        camera.updateProjectionMatrix();
+        // Re-derives the base fov for the new shape while preserving the user's zoom, so
+        // rotating a phone widens the view instead of narrowing it.
+        applyZoom();
         renderer.setSize(clientWidth, clientHeight);
-        dirty = true;
       });
       observer.observe(container);
       teardown.push(() => observer.disconnect());
@@ -269,7 +339,9 @@ export default function PanoramaViewer({
       role="dialog"
       aria-modal="true"
       aria-label={`360 degree view — ${panorama.label}`}
-      className="fixed inset-0 z-50 flex flex-col bg-ink"
+      // 100dvh rather than relying on inset-0 alone: on iOS the fixed containing block is
+      // the large viewport, so the bottom of the panel hides behind the browser toolbar.
+      className="fixed inset-0 z-50 flex h-[100dvh] flex-col bg-ink"
     >
       <div className="flex items-center justify-between gap-4 px-5 py-3 sm:px-6">
         <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-canvas/70">
@@ -307,8 +379,12 @@ export default function PanoramaViewer({
         )}
 
         {status === "ready" && !hasInteracted && (
-          <p className="pointer-events-none absolute inset-x-0 bottom-6 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-canvas/70">
-            Drag to look around
+          <p className="pointer-events-none absolute inset-x-0 bottom-6 px-6 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-canvas/70">
+            {/* The gesture differs by device, so name the one the reader actually has. */}
+            <span className="[@media(hover:none)]:hidden">Drag to look around · scroll to zoom</span>
+            <span className="hidden [@media(hover:none)]:inline">
+              Swipe to look around · pinch to zoom
+            </span>
           </p>
         )}
 
@@ -335,19 +411,27 @@ export default function PanoramaViewer({
                     // Tap opens it on a phone, where there is no hover at all.
                     onClick={() => setOpenHotspot(isOpen ? null : hotspot.sku)}
                     aria-expanded={isOpen}
-                    className="pointer-events-auto relative block h-5 w-5 rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.28),0_2px_10px_rgba(0,0,0,0.45)] outline-none transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
+                    // The button is a 44px touch target; the visible dot is the 20px span
+                    // inside it. Sizing the button itself rather than extending it with a
+                    // pseudo-element keeps the hit area real and testable.
+                    className="pointer-events-auto flex h-11 w-11 items-center justify-center rounded-full outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black/40"
                   >
                     <span className="sr-only">
                       {hotspot.name} — {hotspot.finish}
                     </span>
                     <span
                       aria-hidden
-                      className="motion-safe:animate-ping absolute inset-0 rounded-full bg-white/60"
-                    />
+                      className="relative block h-5 w-5 rounded-full bg-white shadow-[0_0_0_1.5px_rgba(0,0,0,0.28),0_2px_10px_rgba(0,0,0,0.45)] transition-transform group-hover:scale-110"
+                    >
+                      <span className="motion-safe:animate-ping absolute inset-0 rounded-full bg-white/60" />
+                    </span>
                   </button>
 
+                  {/* Floating tooltip, hover devices only. On a phone a 240px panel
+                      anchored to a marker near the edge gets clipped by the viewer's
+                      overflow, so touch gets the bottom sheet below instead. */}
                   <div
-                    className={`pointer-events-auto absolute bottom-full left-1/2 mb-3 w-60 -translate-x-1/2 border border-black/10 bg-white p-4 text-left shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition-opacity ${
+                    className={`pointer-events-auto absolute bottom-full left-1/2 mb-3 w-60 -translate-x-1/2 border border-black/10 bg-white p-4 text-left shadow-[0_12px_32px_-8px_rgba(0,0,0,0.5)] transition-opacity [@media(hover:none)]:hidden ${
                       isOpen
                         ? "opacity-100"
                         : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"
@@ -385,6 +469,54 @@ export default function PanoramaViewer({
             );
           })}
       </div>
+
+      {/*
+        Touch presentation of a marker's details. It lives outside the scrolling viewer so
+        the viewer's overflow cannot clip it, and it is full width, so a marker's position
+        on screen has no bearing on whether the panel is readable.
+      */}
+      {openDetails && (
+        <div className="border-t border-canvas/15 bg-white [@media(hover:hover)]:hidden">
+          <div className="flex items-start justify-between gap-4 px-5 py-4">
+            <div className="min-w-0">
+              <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
+                SKU {openDetails.sku}
+                {openDetails.isCurrent && " · on this page"}
+              </p>
+              <p className="font-display mt-1 text-xl leading-tight text-ink">
+                {openDetails.name}
+              </p>
+              <p className="font-display text-sm italic text-ink-soft">{openDetails.finish}</p>
+
+              <div className="mt-2 flex items-baseline gap-3">
+                <span className="font-display text-xl text-ink">
+                  {openDetails.price ?? "On application"}
+                </span>
+                <span className="font-mono text-[9px] uppercase tracking-[0.12em] text-ink-faint">
+                  {openDetails.availability}
+                </span>
+              </div>
+
+              {!openDetails.isCurrent && (
+                <Link
+                  href={`/p/${openDetails.sku}`}
+                  className="mt-3 inline-block text-sm underline underline-offset-2"
+                >
+                  View this product
+                </Link>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setOpenHotspot(null)}
+              className="-m-2 shrink-0 p-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ink-faint"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
