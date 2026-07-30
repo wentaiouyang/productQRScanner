@@ -1,18 +1,14 @@
 import Link from "next/link";
 import QRCode from "qrcode";
 
+import { BASE_URL, IS_LOCAL_BASE_URL, productUrl } from "@/lib/config";
 import { FIXTURE_NOTES } from "@/lib/product/fixtures";
 import { productSource } from "@/lib/product/fixture-source";
 
 /**
  * Demo launcher. Not part of the customer experience — it exists so the QR codes can
  * be scanned with a real phone and the page states compared side by side.
- *
- * Set NEXT_PUBLIC_BASE_URL to this machine's LAN address (e.g. http://192.168.1.20:3000)
- * for the codes to resolve from a phone; localhost only works on this machine.
  */
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
-
 async function qrDataUrl(target: string): Promise<string> {
   return QRCode.toDataURL(target, {
     margin: 1,
@@ -27,7 +23,7 @@ export default async function DemoIndex() {
   const entries = await Promise.all(
     skus.map(async (sku) => {
       const result = await productSource.lookupBySku(sku);
-      const target = `${BASE_URL}/p/${sku}`;
+      const target = productUrl(sku);
       return {
         sku,
         target,
@@ -50,10 +46,22 @@ export default async function DemoIndex() {
           or follow the link.
         </p>
         <p className="mt-3 text-sm text-ink-faint">
-          Codes resolve to <code className="font-mono">{BASE_URL}</code>. To scan from a
-          phone, restart the dev server with{" "}
-          <code className="font-mono">NEXT_PUBLIC_BASE_URL</code>{" "}
-          set to this machine&rsquo;s LAN address.
+          Codes resolve to <code className="font-mono">{BASE_URL}</code>
+          {IS_LOCAL_BASE_URL ? (
+            <>
+              {" "}
+              — reachable only from this machine, so these codes will not scan from a
+              phone. Unset <code className="font-mono">NEXT_PUBLIC_BASE_URL</code> to
+              point them at the deployed site, or set it to this machine&rsquo;s LAN
+              address.
+            </>
+          ) : (
+            <>
+              , so a phone that scans one lands on the deployed site rather than this dev
+              server. Set <code className="font-mono">NEXT_PUBLIC_BASE_URL</code> to this
+              machine&rsquo;s LAN address to test locally instead.
+            </>
+          )}
         </p>
       </header>
 

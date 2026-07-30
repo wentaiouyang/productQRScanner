@@ -16,8 +16,9 @@ npm run dev
 Then open <http://localhost:3000> — a demo index with a scannable QR code per fixture
 product.
 
-To scan the codes with a real phone, they need to point at this machine's LAN address
-rather than localhost:
+The codes point at the deployed origin, so scanning one with a phone lands on the
+deployed site rather than this dev server. To test the full scan on a local build, point
+them at this machine's LAN address:
 
 ```bash
 NEXT_PUBLIC_BASE_URL=http://192.168.1.20:3000 npm run dev
@@ -25,8 +26,17 @@ NEXT_PUBLIC_BASE_URL=http://192.168.1.20:3000 npm run dev
 
 ## What a QR code contains
 
-Just a URL: `https://<host>/p/<SKU>`, e.g. `/p/16243`. Nothing else — no token, no
+Just a URL — `https://product-qr-scanner.vercel.app/p/16243`. Nothing else: no token, no
 parameters.
+
+The origin lives in one place, [`lib/config.ts`](lib/config.ts), because it is the least
+reversible value in the project. **Once a label is printed, its URL cannot be changed** —
+moving to a different origin means reprinting every label in every showroom.
+
+For that reason, pointing the codes at a domain ABI controls (say `qr.abiinteriors.com`,
+CNAME'd to the host) is worth doing before any label is printed. It costs nothing now and
+means the hosting platform can change later without touching a single label. Nothing has
+been printed yet, so this is still free to decide.
 
 Because the URL derives from the SKU alone, labels can be generated for any set of SKUs
 and reprinted at any time without touching a database. Real ABI SKUs are short numeric
