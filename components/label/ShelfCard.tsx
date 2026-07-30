@@ -49,7 +49,8 @@ export function ShelfCard({
                 </div>
 
                 <div className="mt-2.5">
-                  <FinishDots finishes={product.finishes} />
+                  {/* Smaller than on the single-product card: three rows share one A5. */}
+                  <FinishDots finishes={product.finishes} size={13} />
                 </div>
               </div>
 

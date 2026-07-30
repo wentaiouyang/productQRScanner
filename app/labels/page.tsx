@@ -26,7 +26,13 @@ async function qrSvgDataUrl(target: string): Promise<string> {
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
 }
 
-export default async function LabelsPage() {
+/** `?format=shelf` makes a format linkable, which the review-page generator relies on. */
+export default async function LabelsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ format?: string }>;
+}) {
+  const { format } = await searchParams;
   const cards = [];
 
   for (const sku of productSource.availableSkus()) {
@@ -40,5 +46,11 @@ export default async function LabelsPage() {
     cards.flatMap((card) => [card.finish, ...card.finishes.map((finish) => finish.label)]),
   );
 
-  return <LabelStudio products={cards} unmappedFinishes={missing} />;
+  return (
+    <LabelStudio
+      products={cards}
+      unmappedFinishes={missing}
+      initialFormat={format === "shelf" ? "shelf" : "single"}
+    />
+  );
 }

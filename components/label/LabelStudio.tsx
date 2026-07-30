@@ -31,11 +31,13 @@ function chunk<T>(items: T[], size: number): T[][] {
 export function LabelStudio({
   products,
   unmappedFinishes,
+  initialFormat = "single",
 }: {
   products: CardProduct[];
   unmappedFinishes: string[];
+  initialFormat?: Format;
 }) {
-  const [format, setFormat] = useState<Format>("single");
+  const [format, setFormat] = useState<Format>(initialFormat);
   const [selected, setSelected] = useState<string[]>(products.map((p) => p.sku));
   const [showroom, setShowroom] = useState("Gold Coast");
   const [footnote, setFootnote] = useState("Pricing effective 1 Jul · incl. GST");

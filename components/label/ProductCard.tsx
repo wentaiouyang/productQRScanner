@@ -27,8 +27,8 @@ export function ProductCard({
           <div className="mt-4 border-t border-[#c9c5bd]" />
 
           <div className="mt-5 flex items-center gap-3">
-            <Dot swatch={product.swatch} size={16} />
-            <span className="font-display text-[19px] italic">{product.finish}</span>
+            <Dot swatch={product.swatch} size={19} />
+            <span className="font-display text-[20px] italic">{product.finish}</span>
           </div>
 
           <div className="mt-6 space-y-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-faint">
@@ -70,10 +70,12 @@ export function ProductCard({
         </div>
 
         <div className="flex flex-col items-center">
-          {/* Data-URI QR; nothing for the image optimiser to do. */}
+          {/* Data-URI SVG QR; nothing for the image optimiser to do.
+              Sized to roughly a sixth of the card width — big enough to scan from a
+              step back, which is how a customer actually approaches a display. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={product.qr} alt={`Scan for ${product.name}`} className="h-[86px] w-[86px]" />
-          <p className="mt-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
+          <img src={product.qr} alt={`Scan for ${product.name}`} className="h-[126px] w-[126px]" />
+          <p className="mt-3 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
             Scan for specs &amp; care
           </p>
         </div>

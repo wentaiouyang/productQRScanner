@@ -28,14 +28,20 @@ export function Dot({ swatch, size = 14 }: { swatch: Swatch; size?: number }) {
   );
 }
 
-export function FinishDots({ finishes }: { finishes: CardFinish[] }) {
+export function FinishDots({
+  finishes,
+  size = 17,
+}: {
+  finishes: CardFinish[];
+  size?: number;
+}) {
   if (finishes.length <= 1) return null;
 
   return (
-    <ul className="flex flex-wrap items-center gap-[6px]">
+    <ul className="flex flex-wrap items-center gap-2">
       {finishes.map((finish) => (
         <li key={finish.sku} title={finish.label} className="flex">
-          <Dot swatch={finish.swatch} size={13} />
+          <Dot swatch={finish.swatch} size={size} />
         </li>
       ))}
     </ul>
